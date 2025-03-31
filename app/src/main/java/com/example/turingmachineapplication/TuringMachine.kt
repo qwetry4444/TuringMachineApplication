@@ -5,24 +5,23 @@ class TuringMachine(
 ) {
     private val readHead: ReadHead = ReadHead(0)
     private var state: State = State.q1
-    private var isRunning = false
 
-    fun getCurrentState() = state
-    fun getTape() = tape.toList()
-    fun getHeadPosition() = readHead.getCurrentPosition()
-    fun isMachineRunning() = isRunning
+    fun getTape() = tape
+    fun getHeadPosition() = readHead.getHeadPosition()
 
     fun step(): Boolean {
-        if (state == State.q0) return false
+        if (state == State.q0) return true
 
-        isRunning = true
         val currentSymbol = readHead.read(tape)
 
         when(state) {
             State.q1 -> {
                 when(currentSymbol) {
                     '0' -> readHead.moveRight()
-                    '1' -> state = State.FirstOperand
+                    '1' -> {
+                        state = State.FirstOperand
+                        readHead.moveRight()
+                    }
                     else -> state = State.q0
                 }
             }
@@ -32,6 +31,7 @@ class TuringMachine(
                     '+' -> {
                         state = State.SecondOperand
                         readHead.write('1', tape)
+                        readHead.moveRight()
                     }
 
                     '1' -> readHead.moveRight()
@@ -52,35 +52,33 @@ class TuringMachine(
             }
 
             State.q0 -> {
-                isRunning = false
-                return false
+                return true
             }
         }
-        return true
+        return false
     }
-
 }
 
 class ReadHead(
-    private var currentPosition: Int
+    private var headPosition: Int
 ) {
-    fun moveRight() { currentPosition += 1}
-    fun moveLeft() { currentPosition -= 1 }
+    fun moveRight() { headPosition += 1}
+    fun moveLeft() { headPosition -= 1 }
 
     fun write(character: Char, tape: MutableList<Char>) {
-        if (currentPosition in 0..tape.size)
-            tape[currentPosition] = character
+        if (headPosition in 0..tape.size)
+            tape[headPosition] = character
         else
-            tape.add(currentPosition, character)
+            tape.add(headPosition, character)
     }
 
     fun read(tape: MutableList<Char>): Char {
-        if (currentPosition in 0..tape.size)
-            return tape[currentPosition]
+        if (headPosition in 0..tape.size)
+            return tape[headPosition]
         return '0'
     }
 
-    fun getCurrentPosition() = currentPosition
+    fun getHeadPosition() = headPosition
 }
 
 enum class State {
