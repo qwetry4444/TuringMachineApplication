@@ -118,6 +118,7 @@ class TuringMachine(
             State.GoToFirstOperand -> {
                 when (currentSymbol) {
                     '1' -> readHead.moveLeft()
+                    '=' -> readHead.moveLeft()
                     '*' -> {
                         state = State.ReduceFirstOperand
                         readHead.moveLeft()
@@ -131,7 +132,7 @@ class TuringMachine(
                     'a' -> readHead.moveLeft()
                     '1' -> {
                         readHead.write('a', tape)
-                        state = State.AddOne
+                        state = State.GoToResult
                         readHead.moveRight()
                     }
                     '0' -> {
@@ -141,14 +142,41 @@ class TuringMachine(
                 }
             }
 
-            State.q0 -> return true
-            State.StartFirstOperand -> TODO()
+            State.GoToResult -> {
+                when (currentSymbol) {
+                    '=' -> {
+                        state = State.AddOneToResult
+                        readHead.moveRight()
+                    }
+                    'a' -> readHead.moveRight()
+                    '1' -> readHead.moveRight()
+                    '*' -> readHead.moveRight()
+                }
+            }
+
+            State.AddOneToResult -> {
+                when (currentSymbol) {
+                    '1' -> readHead.moveRight()
+                    '0' -> {
+                        readHead.write('1', tape)
+                        state = State.GoToFirstOperand
+                        readHead.moveLeft()
+                    }
+                }
+            }
+
+
+            State.StartFirstOperand -> {
+
+            }
             State.StartSecondOperand -> TODO()
             State.GoToSecondOperand -> TODO()
             State.ReduceSecondOperand -> TODO()
-            State.AddOne -> TODO()
             State.RestoreFirstOperand -> TODO()
             State.RestoreSecondOperand -> TODO()
+
+            State.q0 -> return true
+
         }
         return false
     }
@@ -162,7 +190,7 @@ enum class State {
     q0, q1,
     FirstOperand, SecondOperand,
     StartFirstOperand, StartSecondOperand, GoToFirstOperand, GoToSecondOperand, ReduceFirstOperand, ReduceSecondOperand,
-    AddOne, RestoreFirstOperand, RestoreSecondOperand
+    AddOneToResult, RestoreFirstOperand, RestoreSecondOperand, GoToResult
 }
 
 
