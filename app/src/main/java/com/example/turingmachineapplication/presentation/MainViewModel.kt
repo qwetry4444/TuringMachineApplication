@@ -1,6 +1,7 @@
 package com.example.turingmachineapplication.presentation
 
 import androidx.lifecycle.ViewModel
+import com.example.turingmachineapplication.Algorithm
 import com.example.turingmachineapplication.TuringMachine
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -10,7 +11,8 @@ class MainViewModel: ViewModel() {
     private var _uiState = MutableStateFlow(MainUiState())
     val uiState = _uiState.asStateFlow()
 
-    private var tm = TuringMachine(_uiState.value.tape)
+    private var tm = TuringMachine(_uiState.value.tape, Algorithm.MultiplicationUnary)
+
     private var _isOver: Boolean = false
 
     fun processAction(action: Action) {

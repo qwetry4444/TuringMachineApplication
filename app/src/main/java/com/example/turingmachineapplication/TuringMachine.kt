@@ -1,10 +1,12 @@
 package com.example.turingmachineapplication
 
 class TuringMachine(
-    private val tape: MutableList<Char> = mutableListOf('0', '0', '0')
+    private val tape: MutableList<Char> = mutableListOf(),
+    private var currentAlgorithm: Algorithm = Algorithm.AdditionUnary
 ) {
     private val readHead: ReadHead = ReadHead(0)
     private var state: State = State.q1
+
 
     fun getTape() = tape
     fun getHeadPosition() = readHead.getHeadPosition()
@@ -14,14 +16,28 @@ class TuringMachine(
 
         val currentSymbol = readHead.read(tape)
 
-        when(state) {
+        return when (currentAlgorithm) {
+            Algorithm.AdditionUnary -> {
+                stepAdditionUnary(currentSymbol)
+            }
+            Algorithm.MultiplicationUnary -> {
+                stepMultiplicationUnary(currentSymbol)
+            }
+
+            else -> false
+        }
+    }
+
+    private fun stepAdditionUnary(currentSymbol: Char): Boolean {
+        when (state) {
             State.q1 -> {
-                when(currentSymbol) {
+                when (currentSymbol) {
                     '0' -> readHead.moveRight()
                     '1' -> {
                         state = State.FirstOperand
                         readHead.moveRight()
                     }
+
                     else -> state = State.q0
                 }
             }
@@ -40,13 +56,14 @@ class TuringMachine(
             }
 
             State.SecondOperand -> {
-                when(currentSymbol) {
+                when (currentSymbol) {
                     '1' -> readHead.moveRight()
                     '0' -> {
                         readHead.moveLeft()
                         readHead.write('0', tape)
                         state = State.q0
                     }
+
                     else -> state = State.q0
                 }
             }
@@ -54,10 +71,100 @@ class TuringMachine(
             State.q0 -> {
                 return true
             }
+
+            else -> return false
+        }
+        return false
+    }
+
+    private fun stepMultiplicationUnary(currentSymbol: Char): Boolean {
+        when (state) {
+            State.q1 -> {
+                when (currentSymbol) {
+                    '0' -> readHead.moveRight()
+                    '1' -> {
+                        state = State.FirstOperand
+                        readHead.moveRight()
+                    }
+
+                    else -> state = State.q0
+                }
+            }
+
+            State.FirstOperand -> {
+                when (currentSymbol) {
+                    '*' -> {
+                        state = State.SecondOperand
+                        readHead.moveRight()
+                    }
+
+                    '1' -> readHead.moveRight()
+                    else -> state = State.q0
+                }
+            }
+
+            State.SecondOperand -> {
+                when (currentSymbol) {
+                    '1' -> readHead.moveRight()
+                    '0' -> {
+                        readHead.write('=', tape)
+                        readHead.moveLeft()
+                        state = State.GoToFirstOperand
+                    }
+                    else -> state = State.q0
+                }
+            }
+
+            State.GoToFirstOperand -> {
+                when (currentSymbol) {
+                    '1' -> readHead.moveLeft()
+                    '*' -> {
+                        state = State.ReduceFirstOperand
+                        readHead.moveLeft()
+                    }
+                    else -> state = State.q0
+                }
+            }
+
+            State.ReduceFirstOperand -> {
+                when (currentSymbol) {
+                    'a' -> readHead.moveLeft()
+                    '1' -> {
+                        readHead.write('a', tape)
+                        state = State.AddOne
+                        readHead.moveRight()
+                    }
+                    '0' -> {
+                        state = State.RestoreFirstOperand
+                        readHead.moveRight()
+                    }
+                }
+            }
+
+            State.q0 -> return true
+            State.StartFirstOperand -> TODO()
+            State.StartSecondOperand -> TODO()
+            State.GoToSecondOperand -> TODO()
+            State.ReduceSecondOperand -> TODO()
+            State.AddOne -> TODO()
+            State.RestoreFirstOperand -> TODO()
+            State.RestoreSecondOperand -> TODO()
         }
         return false
     }
 }
+
+
+
+
+
+enum class State {
+    q0, q1,
+    FirstOperand, SecondOperand,
+    StartFirstOperand, StartSecondOperand, GoToFirstOperand, GoToSecondOperand, ReduceFirstOperand, ReduceSecondOperand,
+    AddOne, RestoreFirstOperand, RestoreSecondOperand
+}
+
 
 class ReadHead(
     private var headPosition: Int
@@ -81,6 +188,9 @@ class ReadHead(
     fun getHeadPosition() = headPosition
 }
 
-enum class State {
-    q0, q1, FirstOperand, SecondOperand
+
+enum class Algorithm {
+    AdditionUnary,
+    MultiplicationUnary,
+    AdditionBinary
 }
