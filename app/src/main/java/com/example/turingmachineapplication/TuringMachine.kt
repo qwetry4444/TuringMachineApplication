@@ -86,7 +86,6 @@ class TuringMachine(
                         state = State.FirstOperand
                         readHead.moveRight()
                     }
-
                     else -> state = State.q0
                 }
             }
@@ -94,31 +93,43 @@ class TuringMachine(
             State.FirstOperand -> {
                 when (currentSymbol) {
                     '*' -> {
-                        state = State.SecondOperand
+                        state = State.ReduceSecondOperand
                         readHead.moveRight()
                     }
-
                     '1' -> readHead.moveRight()
                     else -> state = State.q0
                 }
             }
 
-            State.SecondOperand -> {
+            State.ReduceSecondOperand -> {
                 when (currentSymbol) {
-                    '1' -> readHead.moveRight()
-                    '0' -> {
-                        readHead.write('=', tape)
+                    '1' -> {
+                        readHead.write('a', tape)
                         readHead.moveLeft()
                         state = State.GoToFirstOperand
                     }
+                    '=' -> {
+                        readHead.moveLeft()
+                        state = State.RestoreSecondOperand
+                    }
+                    'a' -> readHead.moveRight()
+                    else -> state = State.q0
+                }
+            }
+            State.RestoreSecondOperand -> {
+                when (currentSymbol){
+                    'a' -> {
+                        readHead.write('1', tape)
+                        readHead.moveLeft()
+                    }
                     else -> state = State.q0
                 }
             }
 
+
             State.GoToFirstOperand -> {
                 when (currentSymbol) {
-                    '1' -> readHead.moveLeft()
-                    '=' -> readHead.moveLeft()
+                    '1', '=', 'a' -> readHead.moveLeft()
                     '*' -> {
                         state = State.ReduceFirstOperand
                         readHead.moveLeft()
@@ -136,9 +147,24 @@ class TuringMachine(
                         readHead.moveRight()
                     }
                     '0' -> {
-                        state = State.RestoreFirstOperand
+                        state = State.GoToSecondOperand
                         readHead.moveRight()
                     }
+                    else -> state = State.q0
+                }
+            }
+
+            State.GoToSecondOperand -> {
+                when(currentSymbol){
+                    '*' -> {
+                        readHead.moveRight()
+                        state = State.ReduceSecondOperand
+                    }
+                    'a' -> {
+                        readHead.write('1', tape)
+                        readHead.moveRight()
+                    }
+                    else -> state = State.q0
                 }
             }
 
@@ -148,9 +174,8 @@ class TuringMachine(
                         state = State.AddOneToResult
                         readHead.moveRight()
                     }
-                    'a' -> readHead.moveRight()
-                    '1' -> readHead.moveRight()
-                    '*' -> readHead.moveRight()
+                    'a', '1', '*' -> readHead.moveRight()
+                    else -> state = State.q0
                 }
             }
 
@@ -162,20 +187,12 @@ class TuringMachine(
                         state = State.GoToFirstOperand
                         readHead.moveLeft()
                     }
+                    else -> state = State.q0
                 }
             }
-
-
-            State.StartFirstOperand -> {
-
-            }
-            State.StartSecondOperand -> TODO()
-            State.GoToSecondOperand -> TODO()
-            State.ReduceSecondOperand -> TODO()
-            State.RestoreFirstOperand -> TODO()
-            State.RestoreSecondOperand -> TODO()
-
             State.q0 -> return true
+
+            else -> state = State.q0
 
         }
         return false
@@ -189,8 +206,8 @@ class TuringMachine(
 enum class State {
     q0, q1,
     FirstOperand, SecondOperand,
-    StartFirstOperand, StartSecondOperand, GoToFirstOperand, GoToSecondOperand, ReduceFirstOperand, ReduceSecondOperand,
-    AddOneToResult, RestoreFirstOperand, RestoreSecondOperand, GoToResult
+    GoToFirstOperand, ReduceFirstOperand, ReduceSecondOperand,
+    AddOneToResult, RestoreSecondOperand, GoToResult, GoToSecondOperand
 }
 
 
@@ -201,14 +218,14 @@ class ReadHead(
     fun moveLeft() { headPosition -= 1 }
 
     fun write(character: Char, tape: MutableList<Char>) {
-        if (headPosition in 0..tape.size)
+        if (headPosition in 0..<tape.size)
             tape[headPosition] = character
         else
-            tape.add(headPosition, character)
+            tape.add(character)
     }
 
     fun read(tape: MutableList<Char>): Char {
-        if (headPosition in 0..tape.size)
+        if (headPosition in 0..<tape.size)
             return tape[headPosition]
         return '0'
     }
