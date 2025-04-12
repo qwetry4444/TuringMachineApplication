@@ -1,7 +1,9 @@
-package com.example.turingmachineapplication.features.TmProcess.presentation
+package com.example.turingmachineapplication.presentation
 
-data class TMInputUiState (
-    val tape: MutableList<Char> = mutableListOf('0', '0', '0', '1', '1', '1', '*', '1', '1', '0', '0', '0'),
+import com.example.turingmachineapplication.TuringMachine
+
+data class MainUiState (
+    val tape: MutableList<Char> = mutableListOf('0', '1', '1', '*', '1', '1', '=', '0', '0'),
     val headPosition: Int = 0,
     val isOver: Boolean = false
 )
