@@ -237,5 +237,15 @@ class ReadHead(
 enum class Algorithm {
     AdditionUnary,
     MultiplicationUnary,
-    AdditionBinary
+    AdditionBinary;
+
+    companion object {
+        fun toString(algorithm: Algorithm): String {
+            return when(algorithm){
+                AdditionUnary -> "Сложение унарных чисел"
+                MultiplicationUnary -> "Умножение унарных чисел"
+                AdditionBinary -> "Сложение бинарных чисел"
+            }
+        }
+    }
 }

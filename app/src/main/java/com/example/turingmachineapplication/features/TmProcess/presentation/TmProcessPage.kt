@@ -26,10 +26,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.turingmachineapplication.features.TmInput.presentation.TmInputViewModel
+
 
 @Composable
-fun TuringMachinePage(navController: NavHostController, modifier: Modifier = Modifier){
-    val viewModel: TMInputViewModel = viewModel()
+fun TmProcessPage(
+    navController: NavHostController,
+    modifier: Modifier = Modifier
+){
+    val viewModel: TmProcessViewModel = viewModel()
     val uiState = viewModel.uiState.collectAsState()
 
     Column(
@@ -44,7 +49,7 @@ fun TuringMachinePage(navController: NavHostController, modifier: Modifier = Mod
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
-                onClick = { viewModel.processAction(TMInputViewModel.Action.NextStep)},
+                onClick = { viewModel.processAction(TmProcessViewModel.Action.NextStep)},
                 modifier = Modifier
                     .background(Color.Green)
                     .size(48.dp)

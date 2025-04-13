@@ -6,8 +6,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.turingmachineapplication.features.TMInput.presentation.TmProcessPage
-import com.example.turingmachineapplication.features.TmProcess.presentation.TuringMachinePage
+import com.example.turingmachineapplication.features.TmProcess.presentation.TmProcessPage
+import com.example.turingmachineapplication.features.TmInput.presentation.TmInputPage
 
 @Composable
 fun AppNavGraph(
@@ -19,7 +19,7 @@ fun AppNavGraph(
         startDestination = startDestination.route
     ){
         composable(route = Screen.TmInput.route) {
-            TuringMachinePage(navController)
+            TmInputPage(navController)
         }
 
         composable(
