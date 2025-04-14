@@ -1,7 +1,7 @@
 package com.example.turingmachineapplication.features.TmInput.presentation
 
 import androidx.lifecycle.ViewModel
-import com.example.turingmachineapplication.Algorithm
+import com.example.turingmachineapplication.core.domain.TurginMachineLogic.Algorithm
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update

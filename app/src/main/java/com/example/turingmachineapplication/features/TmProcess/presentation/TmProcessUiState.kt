@@ -1,6 +1,6 @@
 package com.example.turingmachineapplication.features.TmProcess.presentation
 
-import com.example.turingmachineapplication.Algorithm
+import com.example.turingmachineapplication.core.domain.TurginMachineLogic.Algorithm
 
 
 data class TmProcessUiState (
