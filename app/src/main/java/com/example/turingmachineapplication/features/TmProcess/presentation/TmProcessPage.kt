@@ -41,42 +41,76 @@ fun TmProcessPage(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = modifier.padding(24.dp)
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+        modifier = modifier
+            .padding(horizontal = 24.dp, vertical = 32.dp)
     ) {
-        Tape(uiState.value.tape, uiState.value.headPosition)
-        Spacer(modifier = Modifier.height(32.dp))
+        Text(
+            text = "Текущая лента",
+            color = Color.DarkGray,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        Tape(
+            tape = uiState.value.tape,
+            currentPosition = uiState.value.headPosition
+        )
+
         Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(top = 32.dp)
         ) {
             IconButton(
-                onClick = { viewModel.processAction(TmProcessViewModel.Action.NextStep)},
+                onClick = { viewModel.processAction(TmProcessViewModel.Action.NextStep) },
                 modifier = Modifier
-                    .background(Color.Green)
-                    .size(48.dp)
+                    .size(56.dp)
+                    .background(Color(0xFF4CAF50), shape = androidx.compose.foundation.shape.CircleShape)
             ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next")
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = "Следующий шаг",
+                    tint = Color.White
+                )
             }
-            Spacer(modifier = Modifier.width(64.dp))
-            if (uiState.value.isOver){
-                Text("Конец")
+
+            if (uiState.value.isOver) {
+                Text(
+                    text = "Конец",
+                    color = Color.Red,
+                    modifier = Modifier.padding(start = 24.dp)
+                )
             }
         }
-
     }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun Tape(tape: MutableList<Char>, currentPosition: Int, modifier: Modifier = Modifier){
-    FlowRow(horizontalArrangement = Arrangement.Center) {
+fun Tape(
+    tape: List<Char>,
+    currentPosition: Int,
+    modifier: Modifier = Modifier
+) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.Center,
+        modifier = modifier
+    ) {
         tape.forEachIndexed { index, char ->
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.size(48.dp)
-                    .border(2.dp, Color.Black)
-                    .background(if (index == currentPosition) Color.Green else Color.Transparent),
+                modifier = Modifier
+                    .size(48.dp)
+                    .border(
+                        width = 2.dp,
+                        color = if (index == currentPosition) Color(0xFF4CAF50) else Color.Gray,
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+                    )
+                    .background(
+                        color = if (index == currentPosition) Color(0xFFB2FF59) else Color.White,
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+                    )
             ) {
                 Text(text = char.toString())
             }

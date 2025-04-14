@@ -199,6 +199,78 @@ class TuringMachine(
         }
         return false
     }
+
+    private var carry = 0 // перенос
+
+    private fun stepAdditionBinary(currentSymbol: Char): Boolean {
+        when (state) {
+            State.q1 -> {
+                // Идем вправо к знаку '='
+                when (currentSymbol) {
+                    '0', '1', '+', -> readHead.moveRight()
+                    '=' -> {
+                        state = State.SumBits
+                        readHead.moveLeft()
+                    }
+                    else -> state = State.q0
+                }
+            }
+
+            State.SumBits -> {
+                // Читаем по одному биту с конца A и B
+                val pos = readHead.getHeadPosition()
+                val bitB = readHead.read(tape)
+                readHead.write(' ', tape) // очищаем текущий бит
+                readHead.moveLeft()
+
+                // Найти бит A
+                var bitA = '0'
+                while (readHead.read(tape) != '+') {
+                    readHead.moveLeft()
+                }
+                readHead.moveLeft()
+                bitA = readHead.read(tape)
+                readHead.write(' ', tape) // очищаем
+
+                // Сумма + перенос
+                val a = if (bitA == '1') 1 else 0
+                val b = if (bitB == '1') 1 else 0
+                val sum = a + b + carry
+
+                carry = if (sum >= 2) 1 else 0
+                val resultBit = if (sum % 2 == 1) '1' else '0'
+
+                // Идём к знаку '=' и пишем результат
+                while (readHead.read(tape) != '=') {
+                    readHead.moveRight()
+                }
+                readHead.moveRight()
+                readHead.write(resultBit, tape)
+
+                // Вернуться назад
+                state = State.MoveToNext
+            }
+
+            State.MoveToNext -> {
+                // Проверка, достигнут ли левый конец
+                if (readHead.getHeadPosition() <= 0) {
+                    if (carry == 1) {
+                        tape.add('1') // пишем перенос
+                    }
+                    state = State.q0
+                    return true
+                }
+                readHead.moveLeft()
+                state = State.SumBits
+            }
+
+            State.q0 -> return true
+
+            else -> state = State.q0
+        }
+
+        return false
+    }
 }
 
 
@@ -207,7 +279,8 @@ enum class State {
     q0, q1,
     FirstOperand, SecondOperand,
     GoToFirstOperand, ReduceFirstOperand, ReduceSecondOperand,
-    AddOneToResult, RestoreSecondOperand, GoToResult, GoToSecondOperand
+    AddOneToResult, RestoreSecondOperand, GoToResult, GoToSecondOperand,
+    MoveToEnd, SumBits, MoveToNext
 }
 
 
