@@ -1,4 +1,4 @@
-package com.example.turingmachineapplication
+package com.example.turingmachineapplication.core.domain.TurginMachineLogic
 
 import kotlinx.serialization.Serializable
 
@@ -24,6 +24,9 @@ class TuringMachine(
             }
             Algorithm.MultiplicationUnary -> {
                 stepMultiplicationUnary(currentSymbol)
+            }
+            Algorithm.AdditionBinary -> {
+                stepAdditionBinary(currentSymbol)
             }
 
             else -> false
@@ -95,11 +98,22 @@ class TuringMachine(
             State.FirstOperand -> {
                 when (currentSymbol) {
                     '*' -> {
-                        state = State.ReduceSecondOperand
+                        state = State.AddEqu
                         readHead.moveRight()
                     }
                     '1' -> readHead.moveRight()
                     else -> state = State.q0
+                }
+            }
+
+            State.AddEqu -> {
+                when (currentSymbol) {
+                    '1' -> readHead.moveRight()
+                    '0' -> {
+                        readHead.write('=', tape)
+                        readHead.moveLeft()
+                        state = State.ReduceSecondOperand
+                    }
                 }
             }
 
@@ -200,75 +214,94 @@ class TuringMachine(
         return false
     }
 
-    private var carry = 0 // перенос
 
+    //111ba+1aa=111
+    private var carry = 0
     private fun stepAdditionBinary(currentSymbol: Char): Boolean {
         when (state) {
             State.q1 -> {
-                // Идем вправо к знаку '='
                 when (currentSymbol) {
-                    '0', '1', '+', -> readHead.moveRight()
+                    '0', '1' -> {
+                        readHead.moveRight()
+                    }
+                    '+' -> {
+                        state = State.FindEnd
+                        readHead.moveRight()
+                    }
+                    else -> state = State.q0
+                }
+            }
+
+            State.FindEnd -> {
+                when (currentSymbol) {
+                    '0', '1' -> readHead.moveRight()
                     '=' -> {
-                        state = State.SumBits
+                        state = State.BackToLast
                         readHead.moveLeft()
                     }
                     else -> state = State.q0
                 }
             }
 
-            State.SumBits -> {
-                // Читаем по одному биту с конца A и B
-                val pos = readHead.getHeadPosition()
-                val bitB = readHead.read(tape)
-                readHead.write(' ', tape) // очищаем текущий бит
+            State.BackToLast -> {
+                when (currentSymbol) {
+                    '0', '1' -> {
+                        state = State.AddBits
+                        //readHead.moveLeft()
+                    }
+                    '+' -> {
+                        state = State.HandleCarry
+                        readHead.moveLeft()
+                    }
+                    else -> state = State.q0
+                }
+            }
+
+            State.AddBits -> {
+                val bitB = currentSymbol
+                readHead.write('a', tape) // Помечаем обработанный бит
                 readHead.moveLeft()
 
-                // Найти бит A
-                var bitA = '0'
+                // Ищем бит первого числа
                 while (readHead.read(tape) != '+') {
                     readHead.moveLeft()
                 }
                 readHead.moveLeft()
-                bitA = readHead.read(tape)
-                readHead.write(' ', tape) // очищаем
+                while (!setOf('1', '0').contains(readHead.read(tape)))
+                    readHead.moveLeft()
 
-                // Сумма + перенос
-                val a = if (bitA == '1') 1 else 0
-                val b = if (bitB == '1') 1 else 0
-                val sum = a + b + carry
+                val bitA = readHead.read(tape)
+                readHead.write('a', tape) // Помечаем обработанный бит
 
+                // Вычисляем сумму
+                val sum = (if (bitA == '1') 1 else 0) +
+                        (if (bitB == '1') 1 else 0) + carry
                 carry = if (sum >= 2) 1 else 0
                 val resultBit = if (sum % 2 == 1) '1' else '0'
 
-                // Идём к знаку '=' и пишем результат
-                while (readHead.read(tape) != '=') {
+                // Идем к концу, чтобы записать результат
+                while (readHead.read(tape) != 'a') {
                     readHead.moveRight()
                 }
-                readHead.moveRight()
                 readHead.write(resultBit, tape)
 
-                // Вернуться назад
-                state = State.MoveToNext
+                state = State.BackToLast
             }
 
-            State.MoveToNext -> {
-                // Проверка, достигнут ли левый конец
-                if (readHead.getHeadPosition() <= 0) {
-                    if (carry == 1) {
-                        tape.add('1') // пишем перенос
-                    }
-                    state = State.q0
-                    return true
+            State.HandleCarry -> {
+                if (carry == 1) {
+                    // Добавляем перенос в начало
+                    tape.add(0, '1')
+                    //readHead.reset(0)
                 }
-                readHead.moveLeft()
-                state = State.SumBits
+                state = State.Halt
             }
+            State.Halt -> return false
 
-            State.q0 -> return true
+            //State.q1 -> return true
 
             else -> state = State.q0
         }
-
         return false
     }
 }
@@ -278,9 +311,9 @@ class TuringMachine(
 enum class State {
     q0, q1,
     FirstOperand, SecondOperand,
-    GoToFirstOperand, ReduceFirstOperand, ReduceSecondOperand,
+    GoToFirstOperand, ReduceFirstOperand, ReduceSecondOperand, AddEqu,
     AddOneToResult, RestoreSecondOperand, GoToResult, GoToSecondOperand,
-    MoveToEnd, SumBits, MoveToNext
+    FindEnd, BackToLast, AddBits, HandleCarry, Halt
 }
 
 

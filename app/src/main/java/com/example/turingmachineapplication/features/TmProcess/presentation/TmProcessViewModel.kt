@@ -2,8 +2,8 @@ package com.example.turingmachineapplication.features.TmProcess.presentation
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import com.example.turingmachineapplication.Algorithm
-import com.example.turingmachineapplication.TuringMachine
+import com.example.turingmachineapplication.core.domain.TurginMachineLogic.Algorithm
+import com.example.turingmachineapplication.core.domain.TurginMachineLogic.TuringMachine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -1,6 +1,5 @@
 package com.example.turingmachineapplication.core.presentation.navigation
 
-import com.example.turingmachineapplication.Algorithm
 import kotlinx.serialization.Serializable
 
 @Serializable
