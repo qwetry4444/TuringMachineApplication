@@ -6,7 +6,7 @@ class TuringMachine(
     private val tape: MutableList<Char> = mutableListOf(),
     private var currentAlgorithm: Algorithm = Algorithm.AdditionUnary
 ) {
-    private val readHead: ReadHead = ReadHead(0)
+    private val readHead: ReadHead = ReadHead(0, tape)
     private var state: State = State.q1
 
 
@@ -16,7 +16,7 @@ class TuringMachine(
     fun step(): Boolean {
         if (state == State.q0) return true
 
-        val currentSymbol = readHead.read(tape)
+        val currentSymbol = readHead.read()
 
         return when (currentAlgorithm) {
             Algorithm.AdditionUnary -> {
@@ -51,7 +51,7 @@ class TuringMachine(
                 when (currentSymbol) {
                     '+' -> {
                         state = State.SecondOperand
-                        readHead.write('1', tape)
+                        readHead.write('1')
                         readHead.moveRight()
                     }
 
@@ -65,7 +65,7 @@ class TuringMachine(
                     '1' -> readHead.moveRight()
                     '0' -> {
                         readHead.moveLeft()
-                        readHead.write('0', tape)
+                        readHead.write('0')
                         state = State.q0
                     }
 
@@ -110,7 +110,7 @@ class TuringMachine(
                 when (currentSymbol) {
                     '1' -> readHead.moveRight()
                     '0' -> {
-                        readHead.write('=', tape)
+                        readHead.write('=')
                         readHead.moveLeft()
                         state = State.ReduceSecondOperand
                     }
@@ -120,7 +120,7 @@ class TuringMachine(
             State.ReduceSecondOperand -> {
                 when (currentSymbol) {
                     '1' -> {
-                        readHead.write('a', tape)
+                        readHead.write('a')
                         readHead.moveLeft()
                         state = State.GoToFirstOperand
                     }
@@ -135,7 +135,7 @@ class TuringMachine(
             State.RestoreSecondOperand -> {
                 when (currentSymbol){
                     'a' -> {
-                        readHead.write('1', tape)
+                        readHead.write('1')
                         readHead.moveLeft()
                     }
                     else -> state = State.q0
@@ -158,7 +158,7 @@ class TuringMachine(
                 when (currentSymbol) {
                     'a' -> readHead.moveLeft()
                     '1' -> {
-                        readHead.write('a', tape)
+                        readHead.write('a')
                         state = State.GoToResult
                         readHead.moveRight()
                     }
@@ -177,7 +177,7 @@ class TuringMachine(
                         state = State.ReduceSecondOperand
                     }
                     'a' -> {
-                        readHead.write('1', tape)
+                        readHead.write('1')
                         readHead.moveRight()
                     }
                     else -> state = State.q0
@@ -199,7 +199,7 @@ class TuringMachine(
                 when (currentSymbol) {
                     '1' -> readHead.moveRight()
                     '0' -> {
-                        readHead.write('1', tape)
+                        readHead.write('1')
                         state = State.GoToFirstOperand
                         readHead.moveLeft()
                     }
@@ -215,95 +215,87 @@ class TuringMachine(
     }
 
 
-    //111ba+1aa=111
-    private var carry = 0
     private fun stepAdditionBinary(currentSymbol: Char): Boolean {
         when (state) {
             State.q1 -> {
                 when (currentSymbol) {
-                    '0', '1' -> {
-                        readHead.moveRight()
-                    }
+                    '0', '1' -> readHead.moveRight()
                     '+' -> {
-                        state = State.FindEnd
+                        state = State.SeekRightMostBitSecond
                         readHead.moveRight()
                     }
                     else -> state = State.q0
                 }
             }
 
-            State.FindEnd -> {
+            State.SeekRightMostBitSecond -> {
                 when (currentSymbol) {
                     '0', '1' -> readHead.moveRight()
                     '=' -> {
-                        state = State.BackToLast
                         readHead.moveLeft()
+                        state = State.DecrementSecond
                     }
                     else -> state = State.q0
                 }
             }
 
-            State.BackToLast -> {
+            State.DecrementSecond -> {
                 when (currentSymbol) {
-                    '0', '1' -> {
-                        state = State.AddBits
-                        //readHead.moveLeft()
+                    '1' -> {
+                        readHead.write('0')
+                        state = State.MoveToResult
+                        readHead.moveLeft()
+                    }
+                    '0' -> {
+                        readHead.write('1')
+                        readHead.moveLeft()
                     }
                     '+' -> {
-                        state = State.HandleCarry
+                        // второй операнд стёрт — завершение
+                        state = State.q0
+                    }
+                    else -> state = State.q0
+                }
+            }
+
+            State.MoveToResult -> {
+                when (currentSymbol) {
+                    '0', '1' -> readHead.moveLeft()
+                    '+' -> {
+                        state = State.IncrementFirst
                         readHead.moveLeft()
                     }
                     else -> state = State.q0
                 }
             }
 
-            State.AddBits -> {
-                val bitB = currentSymbol
-                readHead.write('a', tape) // Помечаем обработанный бит
-                readHead.moveLeft()
-
-                // Ищем бит первого числа
-                while (readHead.read(tape) != '+') {
-                    readHead.moveLeft()
+            State.IncrementFirst -> {
+                when (currentSymbol) {
+                    '0' -> {
+                        readHead.write('1')
+                        state = State.q1
+                        readHead.moveRight()
+                    }
+                    '1' -> {
+                        readHead.write('0')
+                        readHead.moveLeft()
+                    }
+                    else -> {
+                        // если дошли до левой границы
+                        readHead.write('1')
+                        state = State.q1
+                        readHead.moveRight()
+                    }
                 }
-                readHead.moveLeft()
-                while (!setOf('1', '0').contains(readHead.read(tape)))
-                    readHead.moveLeft()
-
-                val bitA = readHead.read(tape)
-                readHead.write('a', tape) // Помечаем обработанный бит
-
-                // Вычисляем сумму
-                val sum = (if (bitA == '1') 1 else 0) +
-                        (if (bitB == '1') 1 else 0) + carry
-                carry = if (sum >= 2) 1 else 0
-                val resultBit = if (sum % 2 == 1) '1' else '0'
-
-                // Идем к концу, чтобы записать результат
-                while (readHead.read(tape) != 'a') {
-                    readHead.moveRight()
-                }
-                readHead.write(resultBit, tape)
-
-                state = State.BackToLast
             }
 
-            State.HandleCarry -> {
-                if (carry == 1) {
-                    // Добавляем перенос в начало
-                    tape.add(0, '1')
-                    //readHead.reset(0)
-                }
-                state = State.Halt
-            }
-            State.Halt -> return false
-
-            //State.q1 -> return true
-
+            State.q0 -> return true
             else -> state = State.q0
         }
         return false
     }
+
+
 }
 
 
@@ -313,27 +305,40 @@ enum class State {
     FirstOperand, SecondOperand,
     GoToFirstOperand, ReduceFirstOperand, ReduceSecondOperand, AddEqu,
     AddOneToResult, RestoreSecondOperand, GoToResult, GoToSecondOperand,
-    FindEnd, BackToLast, AddBits, HandleCarry, Halt
+    SeekRightMostBitSecond,
+    DecrementSecond,
+    MoveToResult,
+    IncrementFirst
+
 }
 
 
 class ReadHead(
-    private var headPosition: Int
+    private var headPosition: Int,
+    private var tape: MutableList<Char> = mutableListOf()
 ) {
-    fun moveRight() { headPosition += 1}
-    fun moveLeft() { headPosition -= 1 }
+    fun moveRight() {
+        headPosition += 1
+        if (headPosition == tape.size)
+            tape.add('0')
+    }
+    fun moveLeft() {
+        headPosition -= 1
+        if (headPosition <= 0)
+            tape.add(0, '0')
+    }
 
-    fun write(character: Char, tape: MutableList<Char>) {
+    fun write(character: Char) {
         if (headPosition in 0..<tape.size)
             tape[headPosition] = character
         else
             tape.add(character)
     }
 
-    fun read(tape: MutableList<Char>): Char {
+    fun read(): Char {
         if (headPosition in 0..<tape.size)
             return tape[headPosition]
-        return '0'
+        return 'l'
     }
 
     fun getHeadPosition() = headPosition
