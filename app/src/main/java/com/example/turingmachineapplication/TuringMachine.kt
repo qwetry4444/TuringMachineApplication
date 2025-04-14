@@ -280,7 +280,7 @@ enum class State {
     FirstOperand, SecondOperand,
     GoToFirstOperand, ReduceFirstOperand, ReduceSecondOperand,
     AddOneToResult, RestoreSecondOperand, GoToResult, GoToSecondOperand,
-    MoveToEnd, SumBits, MoveToNext
+    MoveToEnd, SumBits
 }
 
 
@@ -323,3 +323,5 @@ enum class Algorithm {
         }
     }
 }
+
+// xdd
