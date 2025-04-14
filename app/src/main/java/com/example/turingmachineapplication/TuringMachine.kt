@@ -1,5 +1,7 @@
 package com.example.turingmachineapplication
 
+import kotlinx.serialization.Serializable
+
 class TuringMachine(
     private val tape: MutableList<Char> = mutableListOf(),
     private var currentAlgorithm: Algorithm = Algorithm.AdditionUnary
@@ -201,8 +203,6 @@ class TuringMachine(
 
 
 
-
-
 enum class State {
     q0, q1,
     FirstOperand, SecondOperand,
@@ -234,6 +234,7 @@ class ReadHead(
 }
 
 
+@Serializable
 enum class Algorithm {
     AdditionUnary,
     MultiplicationUnary,

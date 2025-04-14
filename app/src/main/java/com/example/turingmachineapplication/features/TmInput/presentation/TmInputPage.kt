@@ -108,7 +108,16 @@ fun TmInputPage(navController: NavHostController, modifier: Modifier = Modifier)
 
         Button(
             onClick = {
-                navController.navigate(Screen.TmProcess.createRoute(uiState.algorithm, uiState.tape))
+                navController.navigate(Screen.TmProcess.withArgs(uiState.algorithm.name, uiState.tape))
+
+//                navController.currentBackStackEntry?.savedStateHandle?.set("algorithm", uiState.algorithm.name)
+//                navController.currentBackStackEntry?.savedStateHandle?.set("tape", uiState.tape)
+//                navController.navigate(Screen.TmProcess.route)
+
+//                val entry = navController.currentBackStackEntry
+//                entry?.savedStateHandle?.set("algorithm", uiState.algorithm.name)
+//                entry?.savedStateHandle?.set("tape", uiState.tape)
+//                navController.navigate(Screen.TmProcess.route)
             },
             modifier = Modifier.fillMaxWidth()
         ) {

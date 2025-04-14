@@ -2,6 +2,10 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+
+    kotlin("plugin.serialization") version "2.0.0"
+    id("com.google.dagger.hilt.android")
+    kotlin("kapt")
 }
 
 android {
@@ -61,4 +65,15 @@ dependencies {
 
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.lifecycle.viewmodel.compose)
+
+    //serialize
+    implementation(libs.kotlinx.serialization.json)
+
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+
+    // ViewModel с Hilt
+    implementation(libs.androidx.hilt.navigation.compose)
+
+    implementation(libs.kotlinx.metadata.jvm)
 }

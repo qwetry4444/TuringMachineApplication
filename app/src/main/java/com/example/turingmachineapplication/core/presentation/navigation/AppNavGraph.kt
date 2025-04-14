@@ -23,12 +23,13 @@ fun AppNavGraph(
         }
 
         composable(
-            route = Screen.TmProcess.route,
+            route = "tm_process?algorithm={algorithm}&tape={tape}",
             arguments = listOf(
-                navArgument("algorithm") { NavType.StringType},
-                navArgument("tape") { NavType.StringType}
-            )) {
-                TmProcessPage(navController)
-            }
+                navArgument("algorithm") { type = NavType.StringType },
+                navArgument("tape") { type = NavType.StringType }
+            )
+        ) {
+            TmProcessPage(navController)
+        }
     }
 }

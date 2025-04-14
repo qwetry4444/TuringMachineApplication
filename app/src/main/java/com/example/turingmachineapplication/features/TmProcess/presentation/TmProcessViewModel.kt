@@ -1,17 +1,29 @@
 package com.example.turingmachineapplication.features.TmProcess.presentation
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.example.turingmachineapplication.Algorithm
 import com.example.turingmachineapplication.TuringMachine
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import javax.inject.Inject
 
-class TmProcessViewModel: ViewModel() {
-    private var _uiState = MutableStateFlow(TmProcessUiState())
+@HiltViewModel
+class TmProcessViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle
+): ViewModel() {
+    private val algorithm = savedStateHandle.get<String>("algorithm")?.let { Algorithm.valueOf(it) }
+        ?: Algorithm.AdditionUnary
+    private val tape = savedStateHandle.get<String>("tape") ?: error("No tape")
+
+    private val _uiState = MutableStateFlow(
+        TmProcessUiState(algorithm = algorithm, tape = tape.toMutableList())
+    )
     val uiState = _uiState.asStateFlow()
 
-    private var tm = TuringMachine(_uiState.value.tape, Algorithm.MultiplicationUnary)
+    private var tm = TuringMachine(_uiState.value.tape, _uiState.value.algorithm)
 
     private var _isOver: Boolean = false
 

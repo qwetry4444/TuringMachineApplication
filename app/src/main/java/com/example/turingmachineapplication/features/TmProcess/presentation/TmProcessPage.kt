@@ -24,8 +24,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.turingmachineapplication.Algorithm
 import com.example.turingmachineapplication.features.TmInput.presentation.TmInputViewModel
 
 
@@ -34,7 +36,7 @@ fun TmProcessPage(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ){
-    val viewModel: TmProcessViewModel = viewModel()
+    val viewModel = hiltViewModel<TmProcessViewModel>()
     val uiState = viewModel.uiState.collectAsState()
 
     Column(
