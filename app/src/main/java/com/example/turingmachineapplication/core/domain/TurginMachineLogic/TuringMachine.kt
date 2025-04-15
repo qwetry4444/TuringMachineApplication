@@ -324,15 +324,20 @@ class ReadHead(
     }
     fun moveLeft() {
         headPosition -= 1
-        if (headPosition <= 0)
+        if (headPosition < 0){
             tape.add(0, '0')
+            headPosition++
+        }
+
     }
 
     fun write(character: Char) {
         if (headPosition in 0..<tape.size)
             tape[headPosition] = character
         else
-            tape.add(character)
+            tape.add(headPosition, character)
+        if (headPosition < 0)
+            headPosition--
     }
 
     fun read(): Char {
